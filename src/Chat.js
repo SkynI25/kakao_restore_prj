@@ -8,15 +8,21 @@ import mockTxt from "./utils/mock.txt";
 
 const Chat = () => {
 
-    const [authorTxt, setAuthorTxt] = useState("");
+    const [chatTxt, setChatTxt] = useState([]);
 
     let modifyTxtFn = (param) => {
-      let userTxt = param.regExp(/\d{0,}년\s\d{0,}월\s\d{0,}일\s(오전|오후)\s\d{1,}:\d{1,},/i);
+      let txtByDate = param.split(/\d{0,}년\s\d{0,}월\s\d{0,}일\s(?:오전|오후)\s\d{1,}:\d{1,}\r\n/);
+
+      let chatTxt = txtByDate.filter((el, i) => i > 1 ? el : "");
+
+      if(chatTxt) {
+        setChatTxt(chatTxt);
+      }
     }
 
     useEffect(() => {
       Axios(mockTxt).then(res => {
-        setAuthorTxt(res.data);
+        modifyTxtFn(res.data);
       });
     }, []);
 
@@ -43,25 +49,43 @@ const Chat = () => {
               </header>
             </div>
             <main>
-              <ul className="chat__messages">
-                <span className="chat__timestamp">2022년 4월 15일 금요일</span>
-                <li className="incoming-message message">
-                  <img src={Avatar} />
-                  <div className="message__content">
-                    <span className="message__bubble">
-                      {authorTxt}
-                    </span>
-                    <span className="message__author">Friend</span>
-                  </div>
-                </li>
-                <li className="sent-message message">
-                  <div className="message__content">
-                    <span className="message__bubble">
-                      2
-                    </span>
-                  </div>
-                </li>
-              </ul>
+                {
+                  chatTxt.map((element, i) => {
+                    let date = element.split(",") ? element.split(",")[0] : "";
+                    let chatCtnt = element.split(/\d{0,}년\s\d{0,}월\s\d{0,}일\s(?:오전|오후)\s\d{1,}:\d{1,},\s/) ? 
+                    element.split(/\d{0,}년\s\d{0,}월\s\d{0,}일\s(?:오전|오후)\s\d{1,}:\d{1,},\s/) : "";
+
+                    return (
+                      <ul className="chat__messages">
+                        <span className="chat__timestamp">{date}</span>
+                        {
+                          chatCtnt.filter(el => el).map((el, i) =>
+                            el.split(":")[0] != "나" ?
+                              (<li key={i} className="incoming-message message">
+
+                                <img src={Avatar} />
+                                <div className="message__content">
+                                  <span className="message__bubble">
+                                    {el.split(":")[1]}
+                                  </span>
+                                  <span className="message__author">{el.split(":")[0]}</span>
+                                </div>
+                              </li>)
+                            :
+                              (<li key={i} className="sent-message message">
+                                <div className="message__content">
+                                  <span className="message__bubble">
+                                    {el.split(":")[1]}
+                                  </span>
+                                </div>
+                               </li>
+                              )
+                          )
+                        }
+                      </ul>
+                    )
+                  })
+                }
             </main>
         </div>
     );
