@@ -1,9 +1,12 @@
 import React from 'react';
 import Chat from './Chat';
+import './styles/styles.scss';
 
 const App = () => {
   return (
-    <Chat />
+    <div className="App">
+      <Chat />
+    </div>
   );
 };
 
